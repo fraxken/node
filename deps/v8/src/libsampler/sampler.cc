@@ -21,19 +21,11 @@
 #include <mach/mach.h>
 // OpenBSD doesn't have <ucontext.h>. ucontext_t lives in <signal.h>
 // and is a typedef for struct sigcontext. There is no uc_mcontext.
-#elif(!V8_OS_ANDROID || defined(__BIONIC_HAVE_UCONTEXT_T)) && !V8_OS_OPENBSD
+#elif !V8_OS_OPENBSD
 #include <ucontext.h>
 #endif
 
 #include <unistd.h>
-
-// GLibc on ARM defines mcontext_t has a typedef for 'struct sigcontext'.
-// Old versions of the C library <signal.h> didn't define the type.
-#if V8_OS_ANDROID && !defined(__BIONIC_HAVE_UCONTEXT_T) && \
-    (defined(__arm__) || defined(__aarch64__)) && \
-    !defined(__BIONIC_HAVE_STRUCT_SIGCONTEXT)
-#include <asm/sigcontext.h>  // NOLINT
-#endif
 
 #elif V8_OS_WIN || V8_OS_CYGWIN
 
@@ -393,17 +385,17 @@ class SignalHandler {
   }
 
   static void IncreaseSamplerCount() {
-    base::LockGuard<base::Mutex> lock_guard(mutex_);
+    base::MutexGuard lock_guard(mutex_);
     if (++client_count_ == 1) Install();
   }
 
   static void DecreaseSamplerCount() {
-    base::LockGuard<base::Mutex> lock_guard(mutex_);
+    base::MutexGuard lock_guard(mutex_);
     if (--client_count_ == 0) Restore();
   }
 
   static bool Installed() {
-    base::LockGuard<base::Mutex> lock_guard(mutex_);
+    base::MutexGuard lock_guard(mutex_);
     return signal_handler_installed_;
   }
 
@@ -423,7 +415,7 @@ class SignalHandler {
 
   static void Restore() {
     if (signal_handler_installed_) {
-      sigaction(SIGPROF, &old_signal_handler_, 0);
+      sigaction(SIGPROF, &old_signal_handler_, nullptr);
       signal_handler_installed_ = false;
     }
   }
