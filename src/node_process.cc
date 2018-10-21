@@ -781,6 +781,7 @@ void EnvEnumerator(const PropertyCallbackInfo<Array>& info) {
                                two_byte_buffer_len);
     if (rc.IsEmpty()) {
       isolate->ThrowException(ERR_STRING_TOO_LONG(isolate));
+      FreeEnvironmentStringsW(environment);
       return;
     }
     argv[idx] = rc.ToLocalChecked();
