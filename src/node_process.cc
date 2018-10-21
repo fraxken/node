@@ -775,6 +775,9 @@ void EnvEnumerator(const PropertyCallbackInfo<Array>& info) {
     const size_t two_byte_buffer_len = s - p;
     v8::MaybeLocal<String> rc = String::NewFromTwoByte(
         isolate, two_byte_buffer, NewStringType::kNormal, two_byte_buffer_len);
+    if (rc.IsEmpty()) {
+      return;
+    }
     argv[idx] = rc.ToLocalChecked();
     if (++idx >= arraysize(argv)) {
       fn->Call(ctx, envarr, idx, argv).ToLocalChecked();
