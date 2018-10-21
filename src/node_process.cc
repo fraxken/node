@@ -52,7 +52,6 @@ using v8::HeapStatistics;
 using v8::Integer;
 using v8::Isolate;
 using v8::Local;
-using v8::MaybeLocal;
 using v8::Name;
 using v8::NewStringType;
 using v8::Number;
@@ -628,9 +627,12 @@ void EnvGetter(Local<Name> property,
   if ((result > 0 || GetLastError() == ERROR_SUCCESS) &&
       result < arraysize(buffer)) {
     const uint16_t* two_byte_buffer = reinterpret_cast<const uint16_t*>(buffer);
-    MaybeLocal<String> rc = String::NewFromTwoByte(
+    v8::MaybeLocal<String> rc = String::NewFromTwoByte(
         isolate, two_byte_buffer, NewStringType::kNormal);
-    return info.GetReturnValue().Set(rc);
+    if (rc.IsEmpty()) {
+      return;
+    }
+    return info.GetReturnValue().Set(rc.ToLocalChecked());
   }
 #endif
 }
@@ -771,8 +773,9 @@ void EnvEnumerator(const PropertyCallbackInfo<Array>& info) {
     }
     const uint16_t* two_byte_buffer = reinterpret_cast<const uint16_t*>(p);
     const size_t two_byte_buffer_len = s - p;
-    argv[idx] = String::NewFromTwoByte(
+    v8::MaybeLocal<String> rc = String::NewFromTwoByte(
         isolate, two_byte_buffer, NewStringType::kNormal, two_byte_buffer_len);
+    argv[idx] = rc.ToLocalChecked();
     if (++idx >= arraysize(argv)) {
       fn->Call(ctx, envarr, idx, argv).ToLocalChecked();
       idx = 0;
