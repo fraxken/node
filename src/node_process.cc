@@ -1,5 +1,6 @@
 #include "node.h"
 #include "node_internals.h"
+#include "node_errors.h"
 #include "base_object.h"
 #include "base_object-inl.h"
 #include "env-inl.h"
@@ -629,6 +630,7 @@ void EnvGetter(Local<Name> property,
     v8::MaybeLocal<String> rc = String::NewFromTwoByte(
         isolate, two_byte_buffer, v8::NewStringType::kNormal);
     if (rc.IsEmpty()) {
+      isolate->ThrowException(ERR_STRING_TOO_LONG(isolate));
       return;
     }
     return info.GetReturnValue().Set(rc.ToLocalChecked());
@@ -778,6 +780,7 @@ void EnvEnumerator(const PropertyCallbackInfo<Array>& info) {
                                v8::NewStringType::kNormal,
                                two_byte_buffer_len);
     if (rc.IsEmpty()) {
+      isolate->ThrowException(ERR_STRING_TOO_LONG(isolate));
       return;
     }
     argv[idx] = rc.ToLocalChecked();
