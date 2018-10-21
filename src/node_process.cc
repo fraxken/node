@@ -53,7 +53,6 @@ using v8::Integer;
 using v8::Isolate;
 using v8::Local;
 using v8::Name;
-using v8::NewStringType;
 using v8::Number;
 using v8::PropertyCallbackInfo;
 using v8::String;
@@ -628,7 +627,7 @@ void EnvGetter(Local<Name> property,
       result < arraysize(buffer)) {
     const uint16_t* two_byte_buffer = reinterpret_cast<const uint16_t*>(buffer);
     v8::MaybeLocal<String> rc = String::NewFromTwoByte(
-        isolate, two_byte_buffer, NewStringType::kNormal);
+        isolate, two_byte_buffer, v8::NewStringType::kNormal);
     if (rc.IsEmpty()) {
       return;
     }
@@ -773,8 +772,11 @@ void EnvEnumerator(const PropertyCallbackInfo<Array>& info) {
     }
     const uint16_t* two_byte_buffer = reinterpret_cast<const uint16_t*>(p);
     const size_t two_byte_buffer_len = s - p;
-    v8::MaybeLocal<String> rc = String::NewFromTwoByte(
-        isolate, two_byte_buffer, NewStringType::kNormal, two_byte_buffer_len);
+    v8::MaybeLocal<String> rc =
+        String::NewFromTwoByte(isolate,
+                               two_byte_buffer,
+                               v8::NewStringType::kNormal,
+                               two_byte_buffer_len);
     if (rc.IsEmpty()) {
       return;
     }
